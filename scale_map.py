@@ -7,16 +7,16 @@ SCALE_NOTES = ["A", "A\#", "B", "C", "C\#", "D", "D\#", "E", "F", "F\#", "G", "G
  # I know mode isn't the right word but I don't know what to call it lol
 SCALE_MODES = ["Major", "Minor"]
 
-async def main() -> None:
+async def get_scale() -> str:
     weather = await get_weather()
 
     hour: int = weather.datetime.hour
     description: str = weather.description
     temp: int = weather.temperature
 
-    scale = get_scale(hour, description, temp)
+    scale = get_mapped_scale(hour, description, temp)
 
-    print(scale)
+    return scale
 
 
 async def get_weather():
@@ -29,7 +29,7 @@ async def get_weather():
         return weather
     
 
-def get_scale(hour: int, description: int, temp: int) -> str:
+def get_mapped_scale(hour: int, description: int, temp: int) -> str:
     # scale start is determined by the hour for testing
     scale_start: str = SCALE_NOTES[hour % 12]
 
@@ -39,7 +39,3 @@ def get_scale(hour: int, description: int, temp: int) -> str:
     scale = f'{scale_start} {scale_mode}'
 
     return scale
-
-
-if __name__ == '__main__':
-  asyncio.run(main())
