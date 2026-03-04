@@ -7,7 +7,23 @@ SCALE_NOTES = ["A", "A\#", "B", "C", "C\#", "D", "D\#", "E", "F", "F\#", "G", "G
  # I know mode isn't the right word but I don't know what to call it lol
 SCALE_MODES = ["Major", "Minor"]
 
-async def get_scale() -> str:
+# the number of half steps between each note in the scale
+intervals = {
+    "Major": [2, 2, 1, 2, 2, 2],
+    "Minor": [2, 1, 2, 2, 1, 2]
+}
+
+def get_note_list(start_note, mode):
+    notes = [start_note]
+    index = SCALE_NOTES.index(start_note)
+
+    for interval in intervals[mode]:
+        index += interval
+        notes.append(SCALE_NOTES[index % len(SCALE_NOTES)])
+    
+    return notes
+
+async def get_scale() -> list[str]:
     weather = await get_weather()
 
     hour: int = weather.datetime.hour
@@ -29,13 +45,13 @@ async def get_weather():
         return weather
     
 
-def get_mapped_scale(hour: int, description: int, temp: int) -> str:
+def get_mapped_scale(hour: int, description: int, temp: int) -> list[str]:
     # scale start is determined by the hour for testing
     scale_start: str = SCALE_NOTES[hour % 12]
 
     # scale mode is random for testing
     scale_mode: str = random.choice(SCALE_MODES)
 
-    scale = f'{scale_start} {scale_mode}'
+    scale = get_note_list(scale_start, scale_mode)
 
     return scale
