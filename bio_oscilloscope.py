@@ -20,8 +20,9 @@ def measure_bio_feedback():
 
 # Rolling buffer of last N readings
 N = 100
-signal_data = deque([0]*N, maxlen=N)
+signal_data = deque([0]*N, maxlen=N) # For the data saving task. .csv
 
+# Plot
 plt.ion()  # Interactive mode on
 fig, ax = plt.subplots()
 line, = ax.plot(signal_data)
