@@ -2,6 +2,11 @@
 from oscilloscope import PlantOscilloscope
 import time
 
+def get_log_str(measurements):
+    log_str = ""
+    result = ' '.join(str(m) for m in measurements)
+    return result
+
 initial_time = time.time()
 time_interval = 1 # time passed for one sublist of measurements in the log
 
@@ -24,6 +29,11 @@ while True:
 
     time_intervals_since_start = (time.time() - initial_time) / time_interval
     if time_intervals_since_start > len(log):
-        print(log[-1])
+        #print(log[-1])
+
+        with open("test_log.txt", 'a') as log_file:
+            log_str = get_log_str(log[-1])
+            log_file.write(log_str + '\n')
+
         log.append([])
 
