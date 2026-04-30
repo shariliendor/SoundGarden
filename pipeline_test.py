@@ -1,6 +1,8 @@
-#from touchActivatedSignal import measure_bio_feedback
+from measure_capacitance import measure_bio_feedback
 from oscilloscope import PlantOscilloscope
 import time
+
+print("this is the script I want")
 
 def get_log_str(measurements):
     log_str = ""
@@ -19,9 +21,9 @@ oscillo = PlantOscilloscope(plant_names, len(plant_names), 100)
 
 while True:
     # take the measurement and send it to the oscilloscope
-    #measurement = measure_bio_feedback()
-    measurement = 1000
-    time.sleep(0.1)
+    measurement = measure_bio_feedback()
+    #measurement = 1000
+    #time.sleep(0.1)
     oscillo.update_plot([measurement])
 
     # log the measurement and add a new sublist if needed
@@ -33,6 +35,7 @@ while True:
 
         with open("test_log.txt", 'a') as log_file:
             log_str = get_log_str(log[-1])
+            print("logging", log_str)
             log_file.write(log_str + '\n')
 
         log.append([])
