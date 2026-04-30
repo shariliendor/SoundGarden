@@ -16,20 +16,40 @@ class PlantOscilloscope:
     def start(self):
         self.plt = plt
         self.plt.ion()
+        plt.rcParams['toolbar'] = 'None' # get rid of the bottom toolbar
 
         self.fig, self.ax = self.plt.subplots()
-        self.fig.subplots_adjust(left=0.15) # some padding for left-hand side
+        self.plt.get_current_fig_manager().full_screen_toggle()
+        # self.fig.subplots_adjust(left=0.15) # some padding for left-hand side
         self.lines = []
 
+        # dark styling to make it look more oscilloscope-like
+        self.plt.style.use('dark_background')
+        self.ax.set_facecolor('#000000')
+        self.fig.patch.set_facecolor("#1D1D1D")
+
+        colors = ['#00FF00', '#00FFFF', '#FFFF00', '#FF00FF', '#FF5555', '#55FF55', '#5555FF', '#FFFFFF']
         linestyles = ['-', '--', '-.', ':']
 
         for i in range(self.num_plants):
-            line, = self.ax.plot(self.plant_buffers[i], linestyle=linestyles[i % len(linestyles)], label=self.plant_names[i])
-            self.lines.append(line)
+            line, = self.ax.plot(
+                self.plant_buffers[i],
+                color=colors[i % len(colors)],
+                linestyle=linestyles[i % len(linestyles)],
+                label=self.plant_names[i])
+            self.lines.append(line) 
 
-        # different legend options:
-        # ax.legend(loc='upper right') fixes the legend to the right corner
-        # ax.legend() automatically adjusts to best position but jumps around often
+        # oscilloscope grid look
+        self.ax.set_axisbelow(True)
+        self.ax.grid(True, which='major', linestyle='-', linewidth=0.6, color='#444444')
+        self.ax.minorticks_on()
+        self.ax.grid(True, which='minor', linestyle=':', linewidth=0.5, color='#333333')
+
+        # Labels and title
+        self.ax.set_title("Bioelectric Signal (Touch Sensor)", color='#AAAAAA')
+        #self.ax.set_ylabel("Charge Time (Voltage Proxy)", color='#AAAAAA')
+        #self.ax.set_xlabel("Time (samples)", color='#AAAAAA')
+
         # custom legend:
         self.ax.legend(
             loc='lower center',
@@ -44,9 +64,7 @@ class PlantOscilloscope:
 
         self.fig.subplots_adjust(top=0.85)
         self.ax.set_ylim(0, 100000)
-        self.ax.set_title("Bioelectric Signal (Touch Sensor)")
-        self.ax.set_ylabel("Charge Time (Proxy for Voltage)")
-        self.ax.set_xlabel("Time (samples)")
+        self.ax.tick_params(labelbottom = False, labelleft = False) # get rid of the number labels
 
     """
     Updates all plant lines in the plot
