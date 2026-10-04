@@ -26,8 +26,6 @@ while True:
     fake_values = get_fake_values()
     oscillo.update_plot(fake_values)
 
-# to run, do once:
-# python3 -m venv venv && source venv/bin/activate && pip install matplotlib
-# then:
-# source venv/bin/activate
-# python oscilloscope_test.py
+# to run:
+# source soundGardenVENV/bin/activate
+# soundGardenVENV/bin/python3 oscilloscope_test.py
