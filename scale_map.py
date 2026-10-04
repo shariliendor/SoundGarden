@@ -1,6 +1,7 @@
 import python_weather
 import asyncio
 import random
+from datetime import datetime
 
 SCALE_NOTES = ["A", "A\#", "B", "C", "C\#", "D", "D\#", "E", "F", "F\#", "G", "G\#"]
 
@@ -12,6 +13,11 @@ intervals = {
     "Major": [2, 2, 1, 2, 2, 2],
     "Minor": [2, 1, 2, 2, 1, 2]
 }
+
+# Checking the weather takes a while, so only check it every once in a while
+weather = None
+weather_check_interval = 10 # in minutes
+last_weather_check = 0
 
 def get_note_list(start_note, mode):
     notes = [start_note]
@@ -36,11 +42,20 @@ async def get_scale() -> list[str]:
 
 
 async def get_weather():
+    curr_time = datetime.now()
+
+    if last_weather_check != 0:
+        if (curr_time - weather_last_checked).min < weather_check_interval:
+            return weather
+
+
     # Declare the client. The measuring unit used defaults to the metric system (celcius, km/h, etc.)
     async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
 
-        # Fetch a weather forecast from a city.
         weather = await client.get('Bellingham')
+
+        # update weather_last_checked
+        weather_last_checked = time.time()
 
         return weather
     

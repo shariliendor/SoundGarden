@@ -1,4 +1,5 @@
 from measure_capacitance import measure_bio_feedback
+from scale_map import get_scale
 from oscilloscope import PlantOscilloscope
 import time
 
@@ -40,11 +41,13 @@ while True:
     # log the measurement and add a new sublist if needed
     log[-1].append(measurement)
 
-    time_intervals_since_start = (time.time() - initial_time) / time_interval
+
+    curr_time = time.time()
+    time_intervals_since_start = (curr_time - initial_time) / time_interval
     if time_intervals_since_start > len(log):
         #print(log[-1])
 
-        with open("charlie_log.txt", 'a') as log_file:
+        with open("logs/charlie_log.txt", 'a') as log_file:
             second_average = round(second_total/second_measurement_count, 4)
             if(second_counter < average_interval):
                 second_counter += 1
@@ -56,8 +59,8 @@ while True:
                 
                 print(f"Previous {average_interval} second average: {last_average}")
                 print(f"Current {average_interval} second average: {interval_average}")
-                
-                
+
+
                 
                 if(last_average < interval_average):
                     percent_difference = round((abs(last_average - interval_average) / ((last_average + interval_average)/2)) * 100, 2)
@@ -66,11 +69,16 @@ while True:
                     percent_difference = round((abs(last_average - interval_average) / ((last_average + interval_average)/2)) * 100, 2)
                     print(f"{percent_difference} smaller")
                 else:
-                    percent_difference = 0;
+                    percent_difference = 0
                     print(f"Previous {average_interval} second average, and Current {average_interval} second average are identical")
-                    
+
+                # Decide a note to play
+                # I'm not in the lab to test this rn so I'll leave this commented out until I can prove it works
+                # note_choices = get_scale()
+                # play random.choice(note_choices) for duration
+                
                 #clean up our variables for the next interval of seconds
-                last_average = interval_average;
+                last_average = interval_average
                 average_total = 0
                 average_total += second_average
 
