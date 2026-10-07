@@ -1,28 +1,43 @@
-import random
-import asyncio
+import threading
 import time
 from plant import Plant
-from scale_map import get_scale, get_note_list
 
-async def main() -> None:
+#from scale_map import get_scale, get_note_list
 
-    # get the scale
-    # eventually want to put this in the while loop so it updates when it needs to
-    # maybe update periodically every 10 minutes or something
-    # scale = await get_scale()
-    scale = get_note_list("C", "Major")
+def main():
+    num_plants = 6
+    # scale = get_note_list("C", "Major") TODO: scale stuff
 
-    # Set up some dummy plants
-    plants: list[Plant] = []
-    for i in range(5):
-        new_plant = Plant("plant " + str(i))
-        plants.append(new_plant)
+    plant_names = ["Pothos(R)", "Pothos(L)", "Philodendron(R)", "Philodendron(L)", "Mini Monstera", "Arrowhead"]
+    plant_list = []
+    threads = []
 
-    while True:
-        for plant in plants:
-            if plant.get_signal():
-                note = random.choice(scale)
-                plant.play_note(note, 1, 2, 3)
+    for i in range (num_plants+1):
+        # initialize all the plant objects
+        plant = Plant(name=plant_names[i-1])
+        plant_list.append(plant)
+
+        # initialize all the plant threads
+        t = threading.Thread(
+            target=plant.play_loop,
+            args=(),
+            name=f"Thread{i}",
+        )
+        threads.append(t)
+
+    for t in threads:
+        t.start() # warning: each thread runs indefinitely
+
+    # change the scale after a bit
+    time.sleep(10)
+    for plant in plant_list:
+        plant.set_scale(["D"])
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
+
+# To run:
+# source soundGardenVENV/bin/activate
+# soundGardenVENV/bin/python3 main.py
+
