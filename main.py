@@ -1,12 +1,18 @@
 import threading
 import time
 from plant import Plant
+from oscilloscope import PlantOscilloscope
 
 # from scale_map import get_scale, get_note_list
 
 def main():
     num_plants = 6
-    pause_interval = 10
+    pause = 5           # the amount of time that a plant must wait before trying to play a new note
+    threshold = 1.5     # proportion difference necessary to play a note
+    interval_len = 20   # length of context window for comparing averages
+    note_min = 1        # min times you'd prefer a plant to play per interval
+    note_max = 3        # max times you'd prefer a plant to play per interval
+
     # scale = get_note_list("C", "Major") TODO: scale stuff
 
     plant_names = ["Pothos(R)", "Pothos(L)", "Philodendron(R)", "Philodendron(L)", "Mini Monstera", "Arrowhead"]
@@ -15,7 +21,13 @@ def main():
 
     for i in range (num_plants):
         # initialize all the plant objects
-        plant = Plant(name=plant_names[i], pause=pause_interval)
+        plant = Plant(name=plant_names[i], 
+                      pause=pause,
+                      threshold=threshold, 
+                      note_min=note_min, 
+                      note_max=note_max, 
+                      interval_len=interval_len
+                    )
         plant_list.append(plant)
 
         # initialize all the plant threads
@@ -29,10 +41,15 @@ def main():
     for t in threads:
         t.start()
 
-    # Loop that polls plants for a note to play
+    # Loop that polls plants for a note to play and oscilloscope data
     playing_start = time.time()
     scale_change_start = time.time()
-    while (time.time() - playing_start < 30): # only lasts 30 sec for testing
+    oscilloscope_change_start = time.time()
+    oscilloscope = PlantOscilloscope(plant_names, num_plants)
+
+    # will need to modify so this loop cycles on and off every 12 hours
+    while (time.time() - playing_start < 60):
+        update_vals = [0] * num_plants
 
         # change the scale after a certain time interval (one hour in final code)
         if (time.time() - scale_change_start > 20):
@@ -40,14 +57,18 @@ def main():
             for plant in plant_list:
                 plant.set_scale(["D"])
 
-        for plant in plant_list:
+        for i in range(0, num_plants):
+            plant = plant_list[i]
             if (plant.note != ""):
                 print (plant.name, "is playing ", plant.note)
                 plant.clear_note()
                 # eventually will send note to audio system and EQ
-        
-        # eventually will send measurement info to oscilloscope
-        
+            update_vals[i] = plant.curr_signal
+
+        # update the oscilloscope intermittently
+        if (time.time() - oscilloscope_change_start > 0.04):
+            oscilloscope_change_start = time.time()
+            oscilloscope.update_plot(update_vals)        
 
 
     # end the threads
