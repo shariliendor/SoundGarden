@@ -3,13 +3,19 @@ import time
 
 class Plant:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, pause: int):
         self.name = name
         self._current_scale = ["C"] # dummy value
         self.playing = True
+        self.note = ""
+        self.pause = pause
+        self.average = 0
 
     def set_scale(self, new_scale):
         self._current_scale = new_scale
+
+    def clear_note(self):
+        self.note = ""
 
 
     # play note with pitch, register, loudness, and duration
@@ -19,21 +25,19 @@ class Plant:
     # play loop prototype. Currently 1/10 chance plays a note, then random 0 to 5 sec sleep
     def play_loop(self):
         while self.playing:
-            play_note = self.get_signal()
-            if play_note:
-                print(self.name, "is playing", self._current_scale[0]) # TODO: actually implement this
-            sleep = random.randint(0, 5)
-            time.sleep(sleep)
+            if (self.note == ""):
+                play_note = self.get_signal()
+                if play_note:
+                    self.determine_note(1)
+                    #print(self.name, "is playing", self._current_scale[0]) # TODO: actually implement this
+                sleep = random.randint(0, 2)
+                time.sleep(sleep)
 
-    # testing timing and synchronization
-    def second_test(self):
-        while self.playing:
-            start = time.time()
-            print(self.name, " 1 sec")
-            end = time.time()
-            elapsed = end - start
-            if elapsed < 1:
-                time.sleep(1-elapsed)
+    # determine what note to play, or null
+    def determine_note(self, signal: int):
+        self.note = self._current_scale[0]
+
+
         
 
     # returns true if a spike is happening, false if not
