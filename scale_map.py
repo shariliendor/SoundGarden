@@ -1,9 +1,10 @@
 import python_weather
 import asyncio
 import random
+import time
 from datetime import datetime
 
-SCALE_NOTES = ["A", "A\#", "B", "C", "C\#", "D", "D\#", "E", "F", "F\#", "G", "G\#"]
+SCALE_NOTES = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
 
  # I know mode isn't the right word but I don't know what to call it lol
 SCALE_MODES = ["Major", "Minor"]

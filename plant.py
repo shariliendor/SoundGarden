@@ -1,4 +1,5 @@
 import time
+import random
 
 class Plant:
 
@@ -13,7 +14,7 @@ class Plant:
         self.note_max = note_max
 
         # used by main
-        self._current_scale = ["C"] # dummy value
+        self.current_scale = ["C"] # dummy value
         self.playing = True
         self.note = ""
         self.curr_signal = 0
@@ -28,7 +29,7 @@ class Plant:
         self.log_file = open("logs/top_leaf_electrode_log.txt", 'r')
 
     def set_scale(self, new_scale):
-        self._current_scale = new_scale
+        self.current_scale = new_scale
 
     def clear_note(self):
         self.note = ""
@@ -54,11 +55,13 @@ class Plant:
         for i in range(0, self.interval_len):
             self.test_measure_bio_feedback()
 
-    # determine what note to play, or null
+    # determine what note to play, or keep null
     def determine_note(self):
-        change = self.average / self.past_avg
+        if (self.average == 0): return
+        change = self.past_avg / self.average
         if change >= self.threshold:
-            self.note = self._current_scale[0]
+            rand_index = random.randrange(0, len(self.current_scale))
+            self.note = self.current_scale[rand_index]
             self.note_count += 1
         else: print("did not play note")
 
