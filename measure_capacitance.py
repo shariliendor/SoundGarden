@@ -3,9 +3,8 @@ import time
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
-TOUCH_PIN = 18
 
-def measure_bio_feedback():
+def measure_bio_feedback(TOUCH_PIN=18):
     count = 0
     GPIO.setup(TOUCH_PIN, GPIO.OUT)
     GPIO.output(TOUCH_PIN, GPIO.LOW)

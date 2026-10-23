@@ -16,6 +16,7 @@ def main():
     note_max = 10       # max times you'd prefer a plant to play per interval
 
     plant_names = ["Pothos(R)", "Pothos(L)", "Philodendron(R)", "Philodendron(L)", "Mini Monstera", "Arrowhead"]
+    touch_pins = [18, 2, 3, 4, 5, 6] # placeholder vals
     plant_list = []
     threads = []
 
@@ -26,7 +27,8 @@ def main():
                       threshold=threshold, 
                       note_min=note_min, 
                       note_max=note_max, 
-                      interval_len=interval_len
+                      interval_len=interval_len,
+                      touch_pin=touch_pins[i]
                     )
         plant_list.append(plant)
 
