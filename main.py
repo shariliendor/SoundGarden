@@ -43,21 +43,24 @@ def main():
     for t in threads:
         t.start()
 
-    # Loop that polls plants for a note to play and oscilloscope data
-    playing_start = time.time()
+    #DURATION_SECONDS = 12 * 60 * 60
+    DURATION_SECONDS = 20
+
+    terrarium_wake_time = time.time()
+    end_time = terrarium_wake_time + DURATION_SECONDS
     scale_change_start = time.time()
     oscilloscope_change_start = time.time()
     oscilloscope = PlantOscilloscope(plant_names, num_plants)
+    update_vals = [0] * num_plants
     player = AudioPlayer()
 
     scale = asyncio.run(get_scale())
     for plant in plant_list:
         plant.set_scale(scale)
 
-    update_vals = [0] * num_plants
-
-    # will need to modify so this loop cycles on and off every 12 hours
-    while (time.time() - playing_start < 60):
+    # Loop that polls plants for a note to play and oscilloscope data
+    # will use cron to run at 8 am every day? 
+    while (time.time() < end_time):
 
         # change the scale after one hour
         if (time.time() - scale_change_start > 3600):
