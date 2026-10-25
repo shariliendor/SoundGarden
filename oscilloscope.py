@@ -6,74 +6,142 @@ class PlantOscilloscope:
         self.N = N
         self.num_plants = num_plants
         self.plant_names = plant_names
-        self.is_running = True  # flag to safely stop the loop
+        self.is_running = True
 
-        self.plant_buffers = [deque([0]*self.N, maxlen=self.N) for i in range(self.num_plants)]
-        self.start() # start the plot graph
+        self.plant_buffers = [
+            deque([0] * self.N, maxlen=self.N)
+            for i in range(self.num_plants)
+        ]
+
+        self.start()
 
     def start(self):
         self.plt = plt
         self.plt.ion()
-        self.plt.rcParams['toolbar'] = 'None' # get rid of the bottom toolbar
+        self.plt.rcParams['toolbar'] = 'None'
 
-        # Apply dark background before creating the figure
+        # Large text for CRT readability
+        self.plt.rcParams.update({
+            'font.size': 18,
+            'axes.titlesize': 28,
+            'axes.labelsize': 20,
+            'xtick.labelsize': 18,
+            'ytick.labelsize': 18,
+            'legend.fontsize': 16,
+            'figure.autolayout': False,
+        })
+
+        # Dark oscilloscope appearance
         self.plt.style.use('dark_background')
-        self.fig, self.ax = self.plt.subplots()
 
-        # commented out for testing 
-        # self.plt.get_current_fig_manager().full_screen_toggle()
-        
-        # Bind keyboard and window close events
-        self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
-        self.fig.canvas.mpl_connect('close_event', self.on_close)
+        # Create figure
+        self.fig, self.ax = self.plt.subplots(figsize=(12, 7))
+
+        # Fullscreen
+        try:
+            self.plt.get_current_fig_manager().full_screen_toggle()
+        except Exception:
+            pass
+
+        # Keyboard and close events
+        self.fig.canvas.mpl_connect(
+            'key_press_event', self.on_key_press
+        )
+        self.fig.canvas.mpl_connect(
+            'close_event', self.on_close
+        )
 
         self.lines = []
 
-        # dark styling to make it look more oscilloscope-like
         self.ax.set_facecolor('#000000')
-        self.fig.patch.set_facecolor("#1D1D1D")
+        self.fig.patch.set_facecolor('#1D1D1D')
 
-        colors = ['#00FF00', '#00FFFF', '#FFFF00', '#FF00FF', '#FF5555', '#55FF55', '#5555FF', '#FFFFFF']
+        colors = [
+            '#00FF00',  # Green
+            '#00FFFF',  # Cyan
+            '#FFFF00',  # Yellow
+            '#FF00FF',  # Magenta
+            '#FF5555',  # Red
+            '#55FF55',  # Light green
+            '#5555FF',  # Blue
+            '#FFFFFF',  # White
+        ]
+
         linestyles = ['-', '--', '-.', ':']
 
+        # Create thick signal lines
         for i in range(self.num_plants):
             line, = self.ax.plot(
-                self.plant_buffers[i],
+                list(self.plant_buffers[i]),
                 color=colors[i % len(colors)],
                 linestyle=linestyles[i % len(linestyles)],
-                label=self.plant_names[i])
-            self.lines.append(line) 
+                linewidth=3.5,
+                label=self.plant_names[i]
+            )
+            self.lines.append(line)
 
-        # oscilloscope grid look
+        # Grid
         self.ax.set_axisbelow(True)
-        self.ax.grid(True, which='major', linestyle='-', linewidth=0.6, color='#444444')
-        self.ax.minorticks_on()
-        self.ax.grid(True, which='minor', linestyle=':', linewidth=0.5, color='#333333')
 
-        for spine in self.ax.spines.values():
-            spine.set_color('#444444')
-            spine.set_linewidth(0.6)
-
-        # Labels and title
-        self.ax.set_title("Bioelectric Signal (Touch Sensor)", color='#AAAAAA')
-
-        # custom legend:
-        self.ax.legend(
-            loc='lower center',
-            bbox_to_anchor=(0.5, 1.1),
-            ncol=self.num_plants,
-            fontsize=8,
-            handlelength=1.2,
-            handletextpad=0.3,
-            columnspacing=0.8,
-            frameon=False
+        self.ax.grid(
+            True,
+            which='major',
+            linestyle='-',
+            linewidth=1.0,
+            color='#444444'
         )
 
-        self.fig.subplots_adjust(top=0.85)
-        
+        self.ax.minorticks_on()
+
+        self.ax.grid(
+            True,
+            which='minor',
+            linestyle=':',
+            linewidth=0.8,
+            color='#333333'
+        )
+
+        # Plot border
+        for spine in self.ax.spines.values():
+            spine.set_color('#666666')
+            spine.set_linewidth(1.2)
+
+        # Title
+        self.ax.set_title(
+            'Bioelectric Signal (Touch Sensor)',
+            color='#AAAAAA',
+            fontsize=28,
+            pad=20
+        )
+
+        # All plant names on one line
+        self.ax.legend(
+            loc='lower center',
+            bbox_to_anchor=(0.5, 1.14),
+            ncol=self.num_plants,
+            fontsize=16,
+            handlelength=1.3,
+            handletextpad=0.4,
+            columnspacing=0.8,
+            labelspacing=0.8,
+            frameon=False,
+            borderaxespad=0
+        )
+
+        # Keep the plot away from the screen edges
+        # Reduce the top margin to move the legend nearer the top
+        self.fig.subplots_adjust(
+            top=0.79,
+            bottom=0.08,
+            left=0.04,
+            right=0.96
+        )
+
+        # Signal range
         self.ax.set_ylim(0, 5000)
         self.ax.set_xlim(0, self.N - 1)
-        
+
+        # Hide axis ticks and numbers
         self.ax.tick_params(
             which='both',
             bottom=False,
@@ -84,8 +152,12 @@ class PlantOscilloscope:
             labelleft=False
         )
 
+        # Show the window
+        self.plt.show(block=False)
+        self.plt.pause(0.1)
+
     def on_key_press(self, event):
-        # quit if user presses q or 'esc
+        # Press q or Escape to quit
         if event.key in ['q', 'escape']:
             self.is_running = False
             self.plt.close(self.fig)
@@ -94,19 +166,22 @@ class PlantOscilloscope:
         self.is_running = False
 
     def update_plot(self, values):
-        # check that the window wasn't closed before trying to update
+        # Stop updating if the window has closed
         if not self.plt.fignum_exists(self.fig.number):
             self.is_running = False
             return
 
+        # Update plant signals
         for i, val in enumerate(values):
             self.plant_buffers[i].append(val)
-            self.lines[i].set_ydata(self.plant_buffers[i])
-            #self.lines[i].set_xdata(range(len(self.plant_buffers[i])))
-            
+            self.lines[i].set_ydata(
+                list(self.plant_buffers[i])
+            )
+
         try:
-            #self.plt.pause(0.01)
             self.fig.canvas.draw_idle()
-            self.fig.canvas.flush_events()
-        except Exception:
+            self.plt.pause(0.001)
+
+        except Exception as exc:
+            print(f'Oscilloscope update failed: {exc}')
             self.is_running = False

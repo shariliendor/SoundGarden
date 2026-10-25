@@ -8,12 +8,12 @@ from scale_map import get_scale, get_note_list
 from audio_player import AudioPlayer
 
 def main():
-    num_plants = 6
-    pause = 3           # the amount of time that a plant must wait before trying to play a new note
-    threshold = 2       # proportion difference necessary to play a note
-    interval_len = 20   # length of context window for comparing averages
+    num_plants = 1
+    pause = 2           # the amount of time that a plant must wait before trying to play a new note
+    threshold = 1.2       # proportion difference necessary to play a note
+    interval_len = 10   # length of context window for comparing averages
     note_min = 1        # min times you'd prefer a plant to play per interval
-    note_max = 10       # max times you'd prefer a plant to play per interval
+    note_max = 5       # max times you'd prefer a plant to play per interval
 
     plant_names = ["Pothos(R)", "Pothos(L)", "Philodendron(R)", "Philodendron(L)", "Mini Monstera", "Arrowhead"]
     touch_pins = [18, 2, 3, 4, 5, 6] # placeholder vals
@@ -85,7 +85,9 @@ def main():
         # update the oscilloscope intermittently
         if (time.time() - oscilloscope_change_start > 0.04):
             oscilloscope_change_start = time.time()
-            oscilloscope.update_plot(update_vals)        
+            oscilloscope.update_plot(update_vals)    
+
+        time.sleep(0.005)    
 
 
     # end the threads
