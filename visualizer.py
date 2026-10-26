@@ -10,6 +10,7 @@ CHANNELS = 1              # Mono capturing is cleanest for EQ calculation
 RATE = 44100              # Sampling rate in Hz
 CHUNK = 1024              # Buffer frames (lower = lower latency, higher = better frequency resolution)
 UPDATE_MS = 20            # Plot refresh interval in milliseconds (~50 FPS)
+SILENCE_THRESHOLD_DB = -45  # RMS input level below which the plot is held flat (dBFS)
 
 class AudioEQVisualizer(QtWidgets.QMainWindow):
     def __init__(self):
@@ -84,7 +85,14 @@ class AudioEQVisualizer(QtWidgets.QMainWindow):
             data = self.stream.read(CHUNK, exception_on_overflow=False)
             
             # Convert binary audio buffer into a NumPy 16-bit integer array
-            signal = np.frombuffer(data, dtype=np.int16)
+            signal = np.frombuffer(data, dtype=np.int16).astype(np.float32)
+
+            # Gate low-level input so hardware noise does not dominate the plot.
+            rms = np.sqrt(np.mean(signal ** 2))
+            level_db = 20 * np.log10(max(rms / 32768, 1e-12))
+            if level_db < SILENCE_THRESHOLD_DB:
+                self.curve.setData(self.frequencies, np.zeros_like(self.frequencies))
+                return
             
             # Apply a Hanning window to prevent edge spectral leakage artifacts
             windowed_signal = signal * np.hanning(len(signal))
