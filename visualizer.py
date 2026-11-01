@@ -1,4 +1,5 @@
 import sys
+import time
 import numpy as np
 import pyaudio
 from PyQt5 import QtCore, QtWidgets
@@ -10,7 +11,10 @@ CHANNELS = 1              # Mono capturing is cleanest for EQ calculation
 RATE = 44100              # Sampling rate in Hz
 CHUNK = 1024              # Buffer frames (lower = lower latency, higher = better frequency resolution)
 UPDATE_MS = 20            # Plot refresh interval in milliseconds (~50 FPS)
-SILENCE_THRESHOLD_DB = -45  # RMS input level below which the plot is held flat (dBFS)
+SILENCE_FLOOR_DB = -60    # RMS input level at which the plot is fully attenuated (dBFS)
+FULL_LEVEL_DB = -30       # RMS input level at which no attenuation is applied (dBFS)
+DISPLAY_ATTACK_SECONDS = 0.05
+DISPLAY_RELEASE_SECONDS = 1.5
 
 class AudioEQVisualizer(QtWidgets.QMainWindow):
     def __init__(self):
@@ -42,6 +46,8 @@ class AudioEQVisualizer(QtWidgets.QMainWindow):
         # Compute frequency bin mappings for the X-axis
         self.frequencies = np.fft.rfftfreq(CHUNK, d=1.0/RATE)
         self.plot_widget.setXRange(0, 20000) # Cut off visual at human hearing limit (20kHz)
+        self.display_magnitude = np.zeros_like(self.frequencies)
+        self.last_update_time = time.monotonic()
         
         # Initialize PyAudio
         self.p = pyaudio.PyAudio()
@@ -87,12 +93,15 @@ class AudioEQVisualizer(QtWidgets.QMainWindow):
             # Convert binary audio buffer into a NumPy 16-bit integer array
             signal = np.frombuffer(data, dtype=np.int16).astype(np.float32)
 
-            # Gate low-level input so hardware noise does not dominate the plot.
+            # Smoothly attenuate low-level input so the plot fades into silence.
             rms = np.sqrt(np.mean(signal ** 2))
             level_db = 20 * np.log10(max(rms / 32768, 1e-12))
-            if level_db < SILENCE_THRESHOLD_DB:
-                self.curve.setData(self.frequencies, np.zeros_like(self.frequencies))
-                return
+            fade = np.clip(
+                (level_db - SILENCE_FLOOR_DB) / (FULL_LEVEL_DB - SILENCE_FLOOR_DB),
+                0,
+                1,
+            )
+            attenuation = fade * fade * (3 - 2 * fade)
             
             # Apply a Hanning window to prevent edge spectral leakage artifacts
             windowed_signal = signal * np.hanning(len(signal))
@@ -103,9 +112,23 @@ class AudioEQVisualizer(QtWidgets.QMainWindow):
             
             # Convert amplitude magnitude to an approximate dB Log Scale (+1 prevents log(0) errors)
             log_magnitude = 20 * np.log10(magnitude + 1)
+            target_magnitude = log_magnitude * attenuation
+            now = time.monotonic()
+            elapsed = now - self.last_update_time
+            self.last_update_time = now
+            attack = 1 - np.exp(-elapsed / DISPLAY_ATTACK_SECONDS)
+            release = 1 - np.exp(-elapsed / DISPLAY_RELEASE_SECONDS)
+            smoothing = np.where(
+                target_magnitude < self.display_magnitude,
+                release,
+                attack,
+            )
+            self.display_magnitude += (
+                target_magnitude - self.display_magnitude
+            ) * smoothing
             
             # Update the PyQtGraph curve with the calculated EQ data
-            self.curve.setData(self.frequencies, log_magnitude)
+            self.curve.setData(self.frequencies, self.display_magnitude)
             
         except Exception as e:
             pass # Ignore dropped frame exceptions to keep execution smooth
