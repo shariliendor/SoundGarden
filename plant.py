@@ -1,6 +1,6 @@
 import time
 import random
-#from measure_capacitance import measure_bio_feedback
+from measure_capacitance import measure_bio_feedback
 
 class Plant:
 
@@ -43,12 +43,12 @@ class Plant:
     # loop that polls to play a note or not
     def play_loop(self):
         last_note_check = time.time()
-        self.test_get_baselines()
-        #self.get_baselines()
+        #self.test_get_baselines()
+        self.get_baselines()
 
         while self.playing:
-            self.test_measure_bio_feedback()
-            #self.update_measurements()
+            #self.test_measure_bio_feedback()
+            self.update_measurements()
             if (time.time() - last_note_check >= self.pause):
                 if (self.note == ""):
                     self.determine_note()

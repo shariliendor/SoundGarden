@@ -17,15 +17,15 @@ def main():
     note_max = 5        # Maximum times you'd prefer a plant to play per interval
 
     plant_names = [
-        "Pothos(R)",
-        "Pothos(L)",
-        "Philodendron(R)",
-        "Philodendron(L)",
-        "Mini Monstera",
-        "Arrowhead"
+        "Pothos",
+        "Alocasia",
+        "?",
+        "Philodendron",
+        "Peperomia",
+        "Monstera"
     ]
 
-    touch_pins = [18, 2, 3, 4, 5, 6]  # Placeholder values
+    touch_pins = [18, 23, 24, 25, 17, 27]
 
     plant_list = []
     threads = []
@@ -57,7 +57,7 @@ def main():
         t.start()
 
     # DURATION_SECONDS = 12 * 60 * 60
-    DURATION_SECONDS = 60
+    DURATION_SECONDS = 180
 
     terrarium_wake_time = time.time()
     end_time = terrarium_wake_time + DURATION_SECONDS
@@ -105,10 +105,10 @@ def main():
                 # Eventually will send note to EQ
 
             # Subtract from oscilloscope y top to flip data
-            update_vals[i] = 5000 - plant.curr_signal
+            update_vals[i] = max(500, min(5000 - plant.curr_signal, 4500))
 
         # Update the oscilloscope intermittently
-        if time.time() - oscilloscope_change_start > 0.04:
+        if time.time() - oscilloscope_change_start > 0.1:
             oscilloscope_change_start = time.time()
             oscilloscope.update_plot(update_vals)
 
