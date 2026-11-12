@@ -11,6 +11,6 @@ def measure_bio_feedback(TOUCH_PIN=18):
     time.sleep(0.1)
     GPIO.setup(TOUCH_PIN, GPIO.IN)
 
-    while GPIO.input(TOUCH_PIN) == GPIO.LOW and count < 100000:
+    while GPIO.input(TOUCH_PIN) == GPIO.LOW and count < 10000: # 100,000
         count += 1
     return count

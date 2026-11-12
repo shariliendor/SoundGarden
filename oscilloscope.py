@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class PlantOscilloscope:
 
-    def __init__(self, plant_names, num_plants=8, N=100):
+    def __init__(self, plant_names, num_plants=6, N=100):
 
         self.N = N
         self.num_plants = num_plants
@@ -77,14 +77,12 @@ class PlantOscilloscope:
         self.fig.patch.set_facecolor('#1D1D1D')
 
         colors = [
-            '#00FF00',
-            '#00FFFF',
-            '#FFFF00',
-            '#FF00FF',
-            '#FF5555',
-            '#55FF55',
-            '#5555FF',
-            '#FFFFFF',
+            '#ff0056', # Pothos = ?
+            '#ff8b00', # Alocasia = ?
+            '#ffe400', # ? = ?
+            '#c600ff', # Philodendron = purple
+            '#00bd9e', # Peperomia = green
+            '#0053fe', # Monstera = blue?
         ]
 
         linestyles = ['-', '--', '-.', ':']
@@ -123,7 +121,7 @@ class PlantOscilloscope:
 
         # Title
         self.ax.set_title(
-            'Bioelectric Signal (Touch Sensor)',
+            'Bioelectric Signal',
             color='#AAAAAA',
             fontsize=28,
             pad=20

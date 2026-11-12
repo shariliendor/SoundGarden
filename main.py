@@ -30,6 +30,8 @@ def main():
     plant_list = []
     threads = []
 
+    oscilloscope = PlantOscilloscope(plant_names, num_plants)
+
     for i in range(num_plants):
         # Initialize all the plant objects
         plant = Plant(
@@ -64,8 +66,6 @@ def main():
 
     scale_change_start = time.time()
     oscilloscope_change_start = time.time()
-
-    oscilloscope = PlantOscilloscope(plant_names, num_plants)
 
     update_vals = [0] * num_plants
     player = AudioPlayer()
@@ -105,7 +105,8 @@ def main():
                 # Eventually will send note to EQ
 
             # Subtract from oscilloscope y top to flip data
-            update_vals[i] = max(500, min(5000 - plant.curr_signal, 4500))
+            #update_vals[i] = max(500, min(5000 - plant.curr_signal, 4500))
+            update_vals[i] = max(0, min(5000 - plant.curr_signal, 5000))
 
         # Update the oscilloscope intermittently
         if time.time() - oscilloscope_change_start > 0.1:
