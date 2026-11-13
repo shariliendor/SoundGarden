@@ -1,6 +1,8 @@
 import threading
 import time
 import asyncio
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
 
 from plant import Plant
 from oscilloscope import PlantOscilloscope
@@ -26,6 +28,8 @@ def main():
     ]
 
     touch_pins = [18, 23, 24, 25, 17, 27]
+    for pin in touch_pins:
+        GPIO.setup(pin, GPIO.IN)
 
     plant_list = []
     threads = []
@@ -58,8 +62,8 @@ def main():
     for t in threads:
         t.start()
 
-    # DURATION_SECONDS = 12 * 60 * 60
-    DURATION_SECONDS = 180
+    DURATION_SECONDS = 12 * 60 * 60
+    # DURATION_SECONDS = 180
 
     terrarium_wake_time = time.time()
     end_time = terrarium_wake_time + DURATION_SECONDS
@@ -124,6 +128,7 @@ def main():
         t.join()
 
     player.close()
+    GPIO.cleanup()
 
     print("stopped threads")
 
