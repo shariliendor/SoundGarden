@@ -63,10 +63,16 @@ async def get_weather():
 
 def get_mapped_scale(hour: int, description: int, temp: int) -> list[str]:
     # scale start is determined by the hour for testing
-    scale_start: str = SCALE_NOTES[hour % 12]
+    # scale_start: str = SCALE_NOTES[hour % 12]
+
+    # scale start is determined by the temperature, starting at C for 0 degrees and moving up one note for every 10 degrees
+    scale_start: str = SCALE_NOTES[(temp // 10) % 12]
 
     # scale mode is random for testing
-    scale_mode: str = random.choice(SCALE_MODES)
+    # scale_mode: str = random.choice(SCALE_MODES)
+
+    # minor if depressing weather, otherwise major
+    scale_mode: str = "Minor" if ["rain", "snow", "storm", "drizzle", "thunder"] in description.lower() else "Major"
 
     scale = get_note_list(scale_start, scale_mode)
 
