@@ -5,7 +5,10 @@ import fluidsynth
 
 
 # SoundFont path (system-wide installation).
-SOUNDFONT_PATH = Path("/usr/share/sounds/sf2/FluidR3_GM.sf2")
+# "/usr/share/sounds/sf2/FluidR3_GM.sf2"
+# "/usr/share/sounds/sf2/MuseScore_General.sf2"
+# "/usr/share/sounds/sf2/SM64SF_V3.sf2"
+SOUNDFONT_PATH = Path("/usr/share/sounds/sf2/SM64SF_V3.sf2")
 
 # Audio configuration for Raspberry Pi 5.
 SAMPLE_RATE = 44100
@@ -74,7 +77,7 @@ class AudioPlayer:
                     "FluidSynth could not load the SoundFont"
                 )
 
-            # Bank 0, preset 0: General MIDI piano.
+            # Bank 0, preset 0: General MIDI piano on the default channel.
             self.synth.program_select(
                 0,
                 self.soundfont_id,
@@ -93,7 +96,14 @@ class AudioPlayer:
                 self.synth = None
             raise
 
-    def play_note(self, note, duration=0.35, velocity=90):
+    def play_note(
+        self,
+        note,
+        duration=0.35,
+        velocity=90,
+        instrument=0,
+        channel=0,
+    ):
         """
         Play a musical note.
 
@@ -101,6 +111,7 @@ class AudioPlayer:
             player.play_note("C")
             player.play_note("A#", duration=1.0)
             player.play_note("F#", duration=0.5)
+            player.play_note("C", instrument=10, channel=1)
         """
 
         note = note.strip().upper()
@@ -117,6 +128,14 @@ class AudioPlayer:
         if not 0 <= velocity <= 127:
             raise ValueError("Velocity must be between 0 and 127")
 
+        if not 0 <= instrument <= 127:
+            raise ValueError(
+                "Instrument must be a General MIDI program from 0 to 127"
+            )
+
+        if not 0 <= channel <= 15:
+            raise ValueError("Channel must be between 0 and 15")
+
         midi_note = NOTE_TO_MIDI[note]
 
         with self.lock:
@@ -124,8 +143,15 @@ class AudioPlayer:
             if self.closed:
                 return
 
-            self.synth.noteon(
+            self.synth.program_select(
+                channel,
+                self.soundfont_id,
                 0,
+                instrument,
+            )
+
+            self.synth.noteon(
+                channel,
                 midi_note,
                 velocity,
             )
@@ -134,7 +160,7 @@ class AudioPlayer:
             timer = threading.Timer(
                 duration,
                 self._stop_note,
-                args=(midi_note,),
+                args=(channel, midi_note),
             )
 
             self.timers.add(timer)
@@ -142,13 +168,13 @@ class AudioPlayer:
 
         print(f"Playing {note} (MIDI {midi_note})")
 
-    def _stop_note(self, midi_note):
+    def _stop_note(self, channel, midi_note):
 
         with self.lock:
 
             if not self.closed:
                 self.synth.noteoff(
-                    0,
+                    channel,
                     midi_note,
                 )
 
@@ -173,7 +199,8 @@ class AudioPlayer:
 
             # Stop all remaining notes.
             if self.synth is not None:
-                self.synth.all_sounds_off(0)
+                for channel in range(16):
+                    self.synth.all_sounds_off(channel)
                 self.synth.delete()
                 self.synth = None
 

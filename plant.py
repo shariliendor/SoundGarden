@@ -4,9 +4,20 @@ from measure_capacitance import measure_bio_feedback
 
 class Plant:
 
-    def __init__(self, name: str, pause: int, threshold=1.1, note_min=1, note_max=5, interval_len=10, touch_pin=18):
+    def __init__(
+        self,
+        name: str,
+        pause: int,
+        threshold=1.1,
+        note_min=1,
+        note_max=5,
+        interval_len=10,
+        touch_pin=18,
+        instrument: int = 0,
+    ):
         # user set variables
         self.name = name
+        self.instrument = instrument
         self.pause = pause
         self.threshold = threshold
         self.interval_len = interval_len

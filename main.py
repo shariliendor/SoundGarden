@@ -27,6 +27,10 @@ def main():
         "Monstera"
     ]
 
+    # Zero-based General MIDI programs: piano, music box, nylon guitar,
+    # acoustic bass, harp, and flute.
+    plant_instruments = [53, 10, 24, 32, 46, 73]
+
     touch_pins = [18, 23, 24, 25, 17, 27]
     for pin in touch_pins:
         GPIO.setup(pin, GPIO.IN)
@@ -45,7 +49,8 @@ def main():
             note_min=note_min,
             note_max=note_max,
             interval_len=interval_len,
-            touch_pin=touch_pins[i]
+            touch_pin=touch_pins[i],
+            instrument=plant_instruments[i],
         )
 
         plant_list.append(plant)
@@ -98,7 +103,12 @@ def main():
                 print(plant.name, "is playing", plant.note)
 
                 try:
-                    player.play_note(plant.note, duration=0.95)
+                    player.play_note(
+                        plant.note,
+                        duration=0.95,
+                        instrument=plant.instrument,
+                        channel=i,
+                    )
 
                 except ValueError as exc:
                     print(f"Could not play note from {plant.name}: {exc}")
