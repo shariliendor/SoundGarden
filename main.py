@@ -1,6 +1,10 @@
 import threading
 import time
 import asyncio
+import subprocess
+import os
+import sys
+
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 
@@ -67,7 +71,8 @@ def main():
     for t in threads:
         t.start()
 
-    DURATION_SECONDS = 12 * 60 * 60  # 12 hours
+    #DURATION_SECONDS = 12 * 60 * 60  # 12 hours
+    DURATION_SECONDS = 60
 
     terrarium_wake_time = time.time()
     end_time = terrarium_wake_time + DURATION_SECONDS
@@ -78,66 +83,93 @@ def main():
     update_vals = [0] * num_plants
     player = AudioPlayer()
 
-    scale = asyncio.run(get_scale())
+    # Launch the audio EQ visualizer on the second display
+    visualizer_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "visualizer.py"
+    )
 
-    for plant in plant_list:
-        plant.set_scale(scale)
+    visualizer_process = subprocess.Popen(
+        [sys.executable, visualizer_path]
+    )
 
-    # Loop that polls plants for a note to play and oscilloscope data
-    # Will eventually use cron to run at 8 am every day?
-    while time.time() < end_time:
+    print("Audio EQ visualizer launched")
 
-        # Change the scale after one hour
-        if time.time() - scale_change_start > 3600:
-            scale_change_start = time.time()
-            scale = asyncio.run(get_scale())
+    try:
+        scale = asyncio.run(get_scale())
 
-            for plant in plant_list:
-                plant.set_scale(scale)
+        for plant in plant_list:
+            plant.set_scale(scale)
 
-        for i in range(num_plants):
-            plant = plant_list[i]
+        # Loop that polls plants for a note to play and oscilloscope data
+        # Will eventually use cron to run at 8 am every day?
+        while time.time() < end_time:
 
-            if plant.note != "":
-                print(plant.name, "is playing", plant.note)
+            # Change the scale after one hour
+            if time.time() - scale_change_start > 3600:
+                scale_change_start = time.time()
+                scale = asyncio.run(get_scale())
 
-                try:
-                    player.play_note(
-                        plant.note,
-                        duration=0.95,
-                        instrument=plant.instrument,
-                        channel=i,
-                    )
+                for plant in plant_list:
+                    plant.set_scale(scale)
 
-                except ValueError as exc:
-                    print(f"Could not play note from {plant.name}: {exc}")
+            for i in range(num_plants):
+                plant = plant_list[i]
 
-                finally:
-                    plant.clear_note()
+                if plant.note != "" and plant.curr_signal != 10000:
+                    print(plant.name, "is playing", plant.note)
 
-            # Subtract from oscilloscope y top to flip data
-            #update_vals[i] = max(500, min(5000 - plant.curr_signal, 4500))
-            update_vals[i] = max(0, min(5000 - plant.curr_signal, 5000))
+                    try:
+                        player.play_note(
+                            plant.note,
+                            duration=0.95,
+                            instrument=plant.instrument,
+                            channel=i,
+                        )
 
-        # Update the oscilloscope intermittently
-        if time.time() - oscilloscope_change_start > 0.1:
-            oscilloscope_change_start = time.time()
-            oscilloscope.update_plot(update_vals)
+                    except ValueError as exc:
+                        print(f"Could not play note from {plant.name}: {exc}")
 
-        time.sleep(0.005)
+                    finally:
+                        plant.clear_note()
 
-    # End the threads
-    for plant in plant_list:
-        plant.playing = False
+                # Subtract from oscilloscope y top to flip data
+                #update_vals[i] = max(500, min(5000 - plant.curr_signal, 4500))
+                update_vals[i] = max(0, min(5000 - plant.curr_signal, 5000))
 
-    # Wait for all threads to wrap up
-    for t in threads:
-        t.join()
+            # Update the oscilloscope intermittently
+            if time.time() - oscilloscope_change_start > 0.1:
+                oscilloscope_change_start = time.time()
+                oscilloscope.update_plot(update_vals)
 
-    player.close()
-    GPIO.cleanup()
+            time.sleep(0.005)
 
-    print("stopped threads")
+    finally:
+        # End the threads
+        for plant in plant_list:
+            plant.playing = False
+
+        # Wait for all threads to wrap up
+        for t in threads:
+            t.join()
+
+        player.close()
+
+        # Stop the EQ visualizer
+        if visualizer_process.poll() is None:
+            print("Stopping EQ visualizer...")
+
+            visualizer_process.terminate()
+
+            try:
+                visualizer_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                visualizer_process.kill()
+                visualizer_process.wait()
+
+        GPIO.cleanup()
+
+        print("stopped threads")
 
 
 if __name__ == "__main__":
