@@ -21,7 +21,7 @@ def main():
     plant_names = [
         "Pothos",
         "Alocasia",
-        "?",
+        "African Violet",
         "Philodendron",
         "Peperomia",
         "Monstera"
@@ -67,8 +67,7 @@ def main():
     for t in threads:
         t.start()
 
-    DURATION_SECONDS = 12 * 60 * 60
-    # DURATION_SECONDS = 180
+    DURATION_SECONDS = 12 * 60 * 60  # 12 hours
 
     terrarium_wake_time = time.time()
     end_time = terrarium_wake_time + DURATION_SECONDS
@@ -116,8 +115,6 @@ def main():
                 finally:
                     plant.clear_note()
 
-                # Eventually will send note to EQ
-
             # Subtract from oscilloscope y top to flip data
             #update_vals[i] = max(500, min(5000 - plant.curr_signal, 4500))
             update_vals[i] = max(0, min(5000 - plant.curr_signal, 5000))
@@ -154,5 +151,3 @@ if __name__ == "__main__":
 # Or:
 # source .venv/bin/activate
 # python main.py
-
-# python -m pip install python_weather

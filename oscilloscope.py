@@ -78,9 +78,9 @@ class PlantOscilloscope:
 
         colors = [
             '#ff0056', # Pothos = ?
-            '#ff8b00', # Alocasia = ?
-            '#ffe400', # ? = ?
-            '#c600ff', # Philodendron = purple
+            "#ff8000", # Alocasia = ?
+            '#ffe400', # African Violet = ?
+            "#f200ff", # Philodendron = purple
             '#00bd9e', # Peperomia = green
             '#0053fe', # Monstera = blue?
         ]
