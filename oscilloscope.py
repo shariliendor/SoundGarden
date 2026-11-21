@@ -93,7 +93,7 @@ class PlantOscilloscope:
                 self.plant_buffers[i],
                 color=colors[i % len(colors)],
                 linestyle=linestyles[i % len(linestyles)],
-                linewidth=1.8,
+                linewidth=2.5,
                 label=self.plant_names[i]
             )
 
@@ -134,7 +134,7 @@ class PlantOscilloscope:
             fontsize=16,
             handlelength=1.3,
             handletextpad=0.4,
-            columnspacing=0.8,
+            columnspacing=0.5,
             labelspacing=0.8,
             frameon=False,
             borderaxespad=0

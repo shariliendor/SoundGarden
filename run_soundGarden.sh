@@ -12,6 +12,11 @@ source /home/soundGarden/SoundGarden/soundGardenVENV/bin/activate
 # Tell Python which graphical display to use
 export DISPLAY=:0
 
+# Tell Python which PyAudio interface to use
+export XDG_RUNTIME_DIR=/run/user/1000
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+export PULSE_SERVER=unix:/run/user/1000/pulse/native
+
 # Allow access to the desktop's X11 session
 export XAUTHORITY=/home/soundGarden/.Xauthority
 

@@ -8,7 +8,7 @@ import fluidsynth
 # "/usr/share/sounds/sf2/FluidR3_GM.sf2"
 # "/usr/share/sounds/sf2/MuseScore_General.sf2"
 # "/usr/share/sounds/sf2/SM64SF_V3.sf2"
-SOUNDFONT_PATH = Path("/usr/share/sounds/sf2/SM64SF_V3.sf2")
+SOUNDFONT_PATH = Path("/usr/share/sounds/sf2/MuseScore_General.sf2")
 
 # Audio configuration for Raspberry Pi 5.
 SAMPLE_RATE = 44100
@@ -16,7 +16,7 @@ AUDIO_DRIVER = "alsa"
 AUDIO_DEVICE = "default"
 
 # Default volume (0.0 to 1.0).
-DEFAULT_VOLUME = 0.7
+DEFAULT_VOLUME = 1.0
 
 # MIDI pitch numbers for octave 4.
 NOTE_TO_MIDI = {
@@ -60,6 +60,8 @@ class AudioPlayer:
                 gain=volume,
                 samplerate=SAMPLE_RATE,
             )
+
+            self.synth.set_reverb(roomsize=0.8, damping=0.2, width=1.0, level=0.9)
 
             # Initialize Raspberry Pi audio output.
             self.synth.start(

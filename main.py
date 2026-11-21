@@ -33,7 +33,7 @@ def main():
 
     # Zero-based General MIDI programs: piano, music box, nylon guitar,
     # acoustic bass, harp, and flute.
-    plant_instruments = [53, 10, 24, 32, 46, 73]
+    plant_instruments = [0, 4, 24, 32, 46, 73]
 
     touch_pins = [18, 23, 24, 25, 17, 27]
     for pin in touch_pins:
@@ -71,8 +71,8 @@ def main():
     for t in threads:
         t.start()
 
-    #DURATION_SECONDS = 12 * 60 * 60  # 12 hours
-    DURATION_SECONDS = 60
+    DURATION_SECONDS = 12 * 60 * 60  # 12 hours
+    #DURATION_SECONDS = 60
 
     terrarium_wake_time = time.time()
     end_time = terrarium_wake_time + DURATION_SECONDS
