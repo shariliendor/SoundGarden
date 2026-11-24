@@ -72,7 +72,7 @@ def main():
         t.start()
 
     #DURATION_SECONDS = 12 * 60 * 60  # 12 hours
-    DURATION_SECONDS = 20
+    DURATION_SECONDS = 60
 
     terrarium_wake_time = time.time()
     end_time = terrarium_wake_time + DURATION_SECONDS
